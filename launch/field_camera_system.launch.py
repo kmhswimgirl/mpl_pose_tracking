@@ -28,4 +28,4 @@ def generate_launch_description():
     # ros2 run apriltag_ros apriltag_node --ros-args --remap /image_rect:=/image_raw -p image_transport:=compressed
 
     
-    return LaunchDescription([camera_node])
+    return LaunchDescription([camera_node, recify_image])
