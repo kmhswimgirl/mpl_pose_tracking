@@ -1,2 +1,2 @@
-# data_collection_pkgs
-Data collection and pose tracking packages for MQP.
+# mpl_pose_tracking
+Data collection and pose tracking packages for autonomous robots.
