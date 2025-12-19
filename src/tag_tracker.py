@@ -1,8 +1,19 @@
-import rclpy
-from rclpy.node import Node
 
-from geometry_msgs.msg import Pose
+import rclpy
+import math
+from rclpy.node import Node
+from nav_msgs.msg import Odometry
+from nav_msgs.srv import GetPlan
+from geometry_msgs.msg import TwistStamped, PoseStamped, Pose
+from scipy.spatial.transform import Rotation as R
+from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
+from tf2_geometry_msgs import PoseStamped
 from apriltag_msgs.msg import AprilTagDetectionArray, AprilTagDetection
+
+from tf2_ros.transform_listener import TransformListener
+from tf2_ros.buffer import Buffer
+
 
 '''
 kymadogg@kh-fw-16:~$ ros2 interface show apriltag_msgs/msg/AprilTagDetectionArray
@@ -28,23 +39,26 @@ AprilTagDetection[] detections
 
 class PoseTracker(Node):
     def __init__(self):
+        self.declare_parameters(
+            namespace='',
+            parameters=[
+                ('origin_id', 32),
+                ('robot_id', 5)
+            ])
 
         self.log = self.get_logger.info
 
         # Apriltag IDs
-        self.robot_id = 20
-        self.origin_id = 0
-        self.corners_id = [4,6,8]
-        self.opponent_id = 1
-
-        # sim vs real toggle point
-        self.simulated = False
+        self.robot_id = self.get_parameter('robot_id').value
+        self.origin_id = self.get_parameter('origin_id').value
+        # self.corners_id = [4,6,8]
+        # self.opponent_id = 1
 
         # ground truth subscriber
-        if self.simulated:
-            self.ground_truth = self.create_subscription(Pose,'/')
-        else:
-            self.ground_truth = self.create_subscription(AprilTagDetectionArray, '/detections')
+        self.ground_truth = self.create_subscription(AprilTagDetectionArray, '/detections', self.calculate_ground_truth)
+
+        self._tf_buffer = Buffer()
+        self._tf_listener = TransformListener(self._tf_buffer, self)
 
         # IMU
         # robot localization
@@ -58,10 +72,4 @@ class PoseTracker(Node):
         tags = msg
         for tag in tags:
             if tag.id == self.origin_id:
-                tag.pose
-
-        
-
-    
-        
-
+                pass

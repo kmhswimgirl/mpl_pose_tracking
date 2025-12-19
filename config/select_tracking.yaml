@@ -1,0 +1,8 @@
+gz_pose_tracker:
+  ros__parameters:
+    rosbag_filepath: 'amcl_test/test_1'
+    simulated: True
+    drive_control: 'teleop'
+    amcl: True
+    imu: False
+    
