@@ -79,7 +79,7 @@ def generate_launch_description():
         condition = IfCondition(teleop_toggle)
     )
 
-    
+
     rosbag = ExecuteProcess(
         cmd=[[
             FindExecutable(name='ros2'),
@@ -94,6 +94,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        rosbag_rec_cmd,
         teleop_cmd,
         declare_bridge_name_cmd,
         declare_config_file_cmd,
