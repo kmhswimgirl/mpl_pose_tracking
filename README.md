@@ -4,12 +4,7 @@ Data collection and pose tracking packages for autonomous robots.
 Originally made to work with the otto packages in `Autonomous-VEXU`.
 
 ## Launch Files
-There are a few launch files for various different types of pose tracking
-
-launch arguments are listed in the following format:
-```
-Launch Argument | default value : description
-```
+There are a few launch files for various different types of pose tracking. Working on implementing all of the paramters in a YAML file for simplicity.
 
 ## `sim_pose_tracking.launch.py`
 Arguments:
@@ -20,3 +15,9 @@ Arguments:
 
 ## Nodes
 TBD
+
+## Scripts
+A few non-node python files that can generate graphs or filter rosbag data.
+
+## `field_plotter.py`
+Takes in multiple CSV files and plots them on a matplotlib graph that represents the VEX field.

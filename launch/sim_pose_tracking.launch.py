@@ -79,7 +79,6 @@ def generate_launch_description():
         condition = IfCondition(teleop_toggle)
     )
 
-
     rosbag = ExecuteProcess(
         cmd=[[
             FindExecutable(name='ros2'),
@@ -90,6 +89,7 @@ def generate_launch_description():
 
     rosbag_delay = TimerAction(
         condition=IfCondition(rosbag_toggle),
+        period=3.0,
         actions=[rosbag]                   
     )
 

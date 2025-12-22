@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
+import csv
 
 field_side = 3.66
 
@@ -19,7 +20,7 @@ def base_plot():
     show_field_elements(ax)
 
     ax.grid(True)
-    plt.show()
+    # plt.show()
 
 def transform_coords_center(x, y, xw, yh):
     field = 3.66
@@ -29,6 +30,7 @@ def transform_coords_center(x, y, xw, yh):
     return (mx, my)
 
 def show_field_elements(ax):
+    '''plotting the base VEX field dimensions'''
     center = field_side / 2
 
     # center goal
@@ -54,5 +56,22 @@ def show_field_elements(ax):
     #     zone_coords = transform_coords_center(zone[0], zone[1], 0.32, 0.32)
     #     zones = patches.Rectangle(zone_coords, 0.32, 0.32, linewidth=4, edgecolor='gray', facecolor='white')
     #     ax.add_patch(zones)
-    
+
+def add_robot_path(data_file, color, label): # using the test csv files i made
+    x = []
+    y = []
+    with open(data_file, 'r') as file:
+        reader = csv.reader(file)
+        next(reader)
+        for row in reader:
+            x.append(float(row[0]))
+            y.append(float(row[1]))
+
+    plt.plot(x, y, color=color, label=label, marker='o')
+    plt.legend()
+
+# what is executed
 base_plot()
+add_robot_path('data/test_data/test_poses.csv', 'blue', 'poses 1')
+add_robot_path('data/test_data/test_2.csv', 'green', 'poses 2')
+plt.show()
