@@ -1,7 +1,7 @@
 # mpl_pose_tracking
 Data collection and pose tracking packages for autonomous robots.
 
-Dependedent on the otto packages from `Autonomous-VEX
+Originally made to work with the otto packages in `Autonomous-VEXU`.
 
 ## Launch Files
 There are a few launch files for various different types of pose tracking
