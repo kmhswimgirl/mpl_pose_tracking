@@ -4,9 +4,9 @@ from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, TimerAction, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, TimerAction, IncludeLaunchDescription, ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.substitutions import LaunchConfiguration, FindExecutable, PythonExpression
 from launch.conditions import IfCondition
 
 from ros_gz_bridge.actions import RosGzBridge
@@ -23,7 +23,7 @@ def generate_launch_description():
 
     # launch arguments
     teleop_cmd = DeclareLaunchArgument(
-        'teleop_toggle',
+        'teleop',
         default_value = 'true',
         description = 'select the drive method for the sim robot, '
     )
@@ -40,8 +40,15 @@ def generate_launch_description():
         description='YAML config file'
     )
 
+    rosbag_rec_cmd = DeclareLaunchArgument(
+        'rosbag',
+        default_value='false',
+        description='toggle recording rosbags'
+    )
+
     # Convert to launch config variable
-    teleop_toggle = LaunchConfiguration('teleop_toggle')
+    teleop_toggle = LaunchConfiguration('teleop')
+    rosbag_toggle = LaunchConfiguration('rosbag')
 
     # gazebo bridge for ground truth of robot model
     gazebo_bridge = RosGzBridge(
@@ -71,7 +78,21 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(os.path.join(sim_robot, 'launch', 'controller.launch.py')),
         condition = IfCondition(teleop_toggle)
     )
+
     
+    rosbag = ExecuteProcess(
+        cmd=[[
+            FindExecutable(name='ros2'),
+            'bag',
+            'record']],
+        shell=True
+    )
+
+    rosbag_delay = TimerAction(
+        condition=IfCondition(rosbag_toggle),
+        actions=[rosbag]                   
+    )
+
     return LaunchDescription([
         teleop_cmd,
         declare_bridge_name_cmd,
@@ -80,5 +101,6 @@ def generate_launch_description():
         gazebo_bridge,
         otto,
         localization,
-        drive_option_teleop
+        drive_option_teleop,
+        rosbag_delay
         ])
