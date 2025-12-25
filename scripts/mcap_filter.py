@@ -70,5 +70,4 @@ if __name__ == '__main__':
         '/ground_truth' : PoseArray
     }
 
-    topic_parsing('', topics, '')
-            
+    topic_parsing('', topics, '')         
