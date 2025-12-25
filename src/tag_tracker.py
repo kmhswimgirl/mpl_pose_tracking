@@ -14,7 +14,6 @@ from apriltag_msgs.msg import AprilTagDetectionArray, AprilTagDetection
 from tf2_ros.transform_listener import TransformListener
 from tf2_ros.buffer import Buffer
 
-
 '''
 kymadogg@kh-fw-16:~$ ros2 interface show apriltag_msgs/msg/AprilTagDetectionArray
 std_msgs/Header header
@@ -45,7 +44,6 @@ class PoseTracker(Node):
                 ('origin_id', 32),
                 ('robot_id', 5)
             ])
-
         self.log = self.get_logger.info
 
         # Apriltag IDs
@@ -65,6 +63,11 @@ class PoseTracker(Node):
         # AMCL
         # VEX odom?
         # omni wheel controller
+
+    def get_relative_coords(self):
+        
+        
+        pass
 
     def calculate_ground_truth(self, msg:AprilTagDetectionArray):
         '''Take in april tag data and figure out where the robot is'''
