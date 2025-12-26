@@ -6,7 +6,7 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, TimerAction, IncludeLaunchDescription, ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, FindExecutable, PythonExpression
+from launch.substitutions import LaunchConfiguration, FindExecutable
 from launch.conditions import IfCondition
 
 from ros_gz_bridge.actions import RosGzBridge
@@ -16,44 +16,48 @@ def generate_launch_description():
     # packages
     pkg_dir = get_package_share_directory('mpl_pose_tracking')
     sim_robot = get_package_share_directory('otto_gazebo')
+    robot_bringup = get_package_share_directory('otto_bringup')
     vex_fields = get_package_share_directory('pushback_sim')
 
     # file paths
-    bridge_file = os.path.join(pkg_dir, 'config', 'gz_bridge.yaml')
+    bridge_file = os.path.join(pkg_dir, 'config', 'ground_truth_bridge.yaml')
 
-    # launch arguments
+    # teleop toggle argument
+    teleop_toggle = LaunchConfiguration('teleop')
     teleop_cmd = DeclareLaunchArgument(
         'teleop',
-        default_value = 'true',
-        description = 'select the drive method for the sim robot, '
+        default_value='true',  
+        description='select the drive method for the sim robot, '
     )
 
+    # name of the robot pose bridge argument
+    bridge_name = LaunchConfiguration('bridge_name')
     declare_bridge_name_cmd = DeclareLaunchArgument(
         'bridge_name', 
-        default_value="gt_bridge", 
-        description='Name of ros_gz_bridge node'
+        default_value="robot_pose_bridge", 
+        description='Name of ros_gz_bridge node for getting the ground truth pose of the robot'
     )
 
+    # gazebo robot pose bridge config file
+    bridge_config_file = LaunchConfiguration('bridge_config_file')
     declare_config_file_cmd = DeclareLaunchArgument(
-        'config_file', 
-        default_value = bridge_file, 
+        'bridge_config_file', 
+        default_value=bridge_file,  
         description='YAML config file'
     )
 
+    # rosbag recording argument
+    rosbag_toggle = LaunchConfiguration('rosbag')
     rosbag_rec_cmd = DeclareLaunchArgument(
         'rosbag',
-        default_value='false',
+        default_value='false', 
         description='toggle recording rosbags'
     )
 
-    # Convert to launch config variable
-    teleop_toggle = LaunchConfiguration('teleop')
-    rosbag_toggle = LaunchConfiguration('rosbag')
-
     # gazebo bridge for ground truth of robot model
-    gazebo_bridge = RosGzBridge(
-        bridge_name=LaunchConfiguration('bridge_name'),
-        config_file=LaunchConfiguration('config_file'),
+    gazebo_poses = RosGzBridge(
+        bridge_name=bridge_name,
+        config_file=bridge_config_file,
     )
 
     # world launch file
@@ -75,7 +79,7 @@ def generate_launch_description():
 
     # enable teleop control
     drive_option_teleop = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(sim_robot, 'launch', 'controller.launch.py')),
+        PythonLaunchDescriptionSource(os.path.join(robot_bringup, 'launch', 'controller.launch.py')),
         condition = IfCondition(teleop_toggle)
     )
 
@@ -83,7 +87,10 @@ def generate_launch_description():
         cmd=[[
             FindExecutable(name='ros2'),
             'bag',
-            'record']],
+            'record',
+            '/robot_pose',
+            '/amcl_pose',
+            '-o', f'~/rosbags/localization_data/']],
         shell=True
     )
 
@@ -99,9 +106,9 @@ def generate_launch_description():
         declare_bridge_name_cmd,
         declare_config_file_cmd,
         gazebo_world,
-        gazebo_bridge,
         otto,
         localization,
+        gazebo_poses, 
         drive_option_teleop,
         rosbag_delay
         ])
