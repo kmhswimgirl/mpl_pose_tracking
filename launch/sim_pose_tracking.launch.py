@@ -63,7 +63,7 @@ def generate_launch_description():
     # world launch file
     gazebo_world = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(vex_fields, 'launch', 'world_select.launch.py')),
-        launch_arguments={'world': 'pushback_no_blocks'}.items()
+        launch_arguments={'world': 'empty_field'}.items()
     )
 
     # spawn robot
@@ -77,6 +77,13 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(os.path.join(sim_robot, 'launch', 'localization.launch.py'))
     )
 
+
+    # localization launch file
+    map_only = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(sim_robot, 'launch', 'map_server.launch.py'))
+    )
+
+   
     # enable teleop control
     drive_option_teleop = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(robot_bringup, 'launch', 'controller.launch.py')),
@@ -88,9 +95,9 @@ def generate_launch_description():
             FindExecutable(name='ros2'),
             'bag',
             'record',
-            '/robot_pose',
-            '/amcl_pose',
-            '-o', f'~/rosbags/localization_data/']],
+            # '/robot_pose',
+            # '/amcl_pose',
+            '-o', f'~/rosbags/']],
         shell=True
     )
 
@@ -107,8 +114,9 @@ def generate_launch_description():
         declare_config_file_cmd,
         gazebo_world,
         otto,
-        localization,
+        #localization,
+        map_only,
         gazebo_poses, 
         drive_option_teleop,
-        rosbag_delay
+       # rosbag_delay
         ])
