@@ -19,6 +19,7 @@ install(
 install(PROGRAMS
   src/apriltag_ground_truth.py
   src/robot_gz_pose.py
+  src/pose_parser.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

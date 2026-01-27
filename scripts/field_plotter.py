@@ -25,8 +25,8 @@ def base_plot():
 def transform_coords_center(x, y, xw, yh):
     field = 3.66
     c = field / 2
-    mx =  y + c - (xw/2)
-    my = -x + c - (yh/2)
+    mx = x + c - (xw/2)
+    my = y + c - (yh/2)
     return (mx, my)
 
 def translate_point(num):
@@ -52,8 +52,8 @@ def show_field_elements(ax):
     # long goals
     long_goals = [(-1.20, 0), (1.20, 0)]
     for goal in long_goals:
-        goal_coords = transform_coords_center(goal[0], goal[1], 1.239, 0.20)
-        goals = patches.Rectangle(goal_coords, 1.239, 0.20, linewidth=2, edgecolor='gray', facecolor='lightgray')
+        goal_coords = transform_coords_center(goal[0], goal[1], 0.20, 1.239)
+        goals = patches.Rectangle(goal_coords, 0.20, 1.239, linewidth=2, edgecolor='gray', facecolor='lightgray')
         ax.add_patch(goals)
 
     # park_zones = [(0, 1.44), (0, -1.44)]
@@ -91,9 +91,9 @@ def add_robot_path(data_file, color, label, x_col=0, y_col=1):
 # what is executed
 base_plot()
 # Column 0,1 for amcl_x, amcl_y or 2,3 for robot_x, robot_y
-add_robot_path('data/amcl_data/poses_2.csv', 'red', '/amcl_pose', x_col=0, y_col=1)
+add_robot_path('data/nav2_data/detailed_poses_20260126_234827.csv', 'red', '/amcl_pose', x_col=0, y_col=1)
 print('done')
-add_robot_path('data/amcl_data/poses_2.csv', 'blue', '/ground_truth', x_col=2, y_col=3)
+add_robot_path('data/nav2_data/detailed_poses_20260126_234827.csv', 'blue', '/ground_truth', x_col=2, y_col=3)
 print('done x2')
 add_start_marker(0.5, 0.5, 'green', 'Start Position')
 plt.show()
