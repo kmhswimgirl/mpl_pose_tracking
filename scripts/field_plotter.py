@@ -29,6 +29,11 @@ def transform_coords_center(x, y, xw, yh):
     my = -x + c - (yh/2)
     return (mx, my)
 
+def translate_point(num):
+    center_offset = field_side / 2
+    new_num = num + center_offset
+    return new_num
+
 def show_field_elements(ax):
     '''plotting the base VEX field dimensions'''
     center = field_side / 2
@@ -57,21 +62,38 @@ def show_field_elements(ax):
     #     zones = patches.Rectangle(zone_coords, 0.32, 0.32, linewidth=4, edgecolor='gray', facecolor='white')
     #     ax.add_patch(zones)
 
-def add_robot_path(data_file, color, label): # using the test csv files i made
+def add_start_marker(x, y, color='green', label='Start'):
+    x_pt = translate_point(x)
+    y_pt = translate_point(y)
+    plt.plot(x_pt, y_pt, marker='X', color=color, markersize=12, label=label, markeredgewidth=2, markeredgecolor='black')
+    plt.legend()
+
+
+def add_robot_path(data_file, color, label, x_col=0, y_col=1):
     x = []
     y = []
     with open(data_file, 'r') as file:
         reader = csv.reader(file)
-        next(reader)
+        
         for row in reader:
-            x.append(float(row[0]))
-            y.append(float(row[1]))
+            if len(row) > max(x_col, y_col):
+                try:
+                    x_pt = translate_point(float(row[x_col]))
+                    y_pt = translate_point(float(row[y_col]))
+                    x.append(x_pt)
+                    y.append(y_pt)
+                except ValueError:
+                    continue  # Skip header or invalid rows
 
-    plt.plot(x, y, color=color, label=label, marker='o')
+    plt.plot(x, y, color=color, label=label, marker='o', markersize=2)
     plt.legend()
 
 # what is executed
 base_plot()
-add_robot_path('data/test_data/test_poses.csv', 'blue', 'poses 1')
-add_robot_path('data/test_data/test_2.csv', 'green', 'poses 2')
+# Column 0,1 for amcl_x, amcl_y or 2,3 for robot_x, robot_y
+add_robot_path('data/amcl_data/poses_2.csv', 'red', '/amcl_pose', x_col=0, y_col=1)
+print('done')
+add_robot_path('data/amcl_data/poses_2.csv', 'blue', '/ground_truth', x_col=2, y_col=3)
+print('done x2')
+add_start_marker(0.5, 0.5, 'green', 'Start Position')
 plt.show()

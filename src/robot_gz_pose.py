@@ -1,19 +1,12 @@
-
 import rclpy
-import math
-from datetime import datetime
-import pandas as pd # type: ignore
 from rclpy.node import Node
-from geometry_msgs.msg import PoseArray, Pose, PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseArray, Pose, PoseWithCovarianceStamped, PoseStamped
 from scipy.spatial.transform import Rotation as R
 
-from tf2_ros.transform_listener import TransformListener
-from tf2_ros.buffer import Buffer
-
-class PoseTracker(Node):
+class RobotPose(Node):
     '''A node focused on cleaning up the ground truth information taken in from gazebo/ april tags'''
     def __init__(self):
-        super().__init__("pose_tracker")
+        super().__init__("robot_pose")
         self.log = self.get_logger.info
 
         # import parameters
@@ -42,14 +35,26 @@ class PoseTracker(Node):
         # omni wheel controller?
         # self.controller_pose = ...
     
-    def get_ground_truth(self, sim_robot:PoseArray):
-        '''get gazebo sim ground truth and either store or plot it'''
+    def get_ground_truth(self, sim_robot:PoseArray) -> PoseStamped:
+        '''get gazebo sim ground truth, simplify it, and publish to topic '/robot_pose'''
         robot_pos = sim_robot[1].position
         robot_rot = sim_robot[1].orientation
 
-        robot = Pose()
+        robot = PoseStamped()
         robot.position = robot_pos
         robot.orientation = robot_rot
 
         self.ground_truth.publish(robot)
-        
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = RobotPose()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()  
