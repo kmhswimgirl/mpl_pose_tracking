@@ -54,7 +54,7 @@ def topic_parsing(input:str, topics: dict, output: str):
 
 def save_csv(output:str, data:dict):
     try:
-        os.makedirs(output,exist_ok =False) # prevent overwrites
+        os.makedirs(output,exist_ok = False) # prevent overwrites
     except: FileExistsError
 
     for topic, records in data.items():
@@ -67,7 +67,7 @@ def save_csv(output:str, data:dict):
 if __name__ == '__main__':
     topics = {
         '/amcl_pose' : PoseWithCovarianceStamped,
-        '/ground_truth' : PoseArray
+        '/' : PoseArray
     }
 
     topic_parsing('', topics, '')         

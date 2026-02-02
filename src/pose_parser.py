@@ -17,6 +17,8 @@ class PoseParser(Node):
         self.amcl_sub = self.create_subscription(PoseWithCovarianceStamped, '/amcl_pose', self.amcl_callback, 10)
         self.robot_sub = self.create_subscription(PoseArray, '/otto_pose', self.robot_callback, 10)
         self.cmd_vel = self.create_subscription(TwistStamped, '/cmd_vel', self.velocity_callback, 10)
+
+        # self.frequency = self.create_timer(0.5, self.plot_data)
         
         # data structure
         self.data = {
@@ -28,13 +30,17 @@ class PoseParser(Node):
             'robot_r': [],
             'cmd_vel_x': [],
             'cmd_vel_y': [],
-            'cmd_vel_z': []
+            'cmd_vel_r': []
         }
         
         self.robot_x = None
         self.robot_y = None
         self.robot_r = None
         
+        self.cmd_vel_y = None
+        self.cmd_vel_x = None
+        self.cmd_vel_r = None
+
         # uniquely named file (.csv)
         workspace_path = '/home/kymadogg/ros2_ws/src/mqp/mpl_pose_tracking/data'
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -68,40 +74,46 @@ class PoseParser(Node):
         self.cmd_vel_x = msg.twist.linear.x
         self.cmd_vel_y = msg.twist.linear.y
         self.cmd_vel_r = msg.twist.angular.z
-    
+
     def amcl_callback(self, msg: PoseWithCovarianceStamped):
-        '''record AMCL, robot poses, and current velocity together'''
-        if self.robot_x is not None and self.robot_y is not None:
-            amcl_x = msg.pose.pose.position.x
-            amcl_y = msg.pose.pose.position.y
+        '''keep record on AMCL poses'''
+        self.amcl_x = msg.pose.pose.position.x
+        self.amcl_y = msg.pose.pose.position.y
 
-            quat = msg.pose.pose.orientation
-            quat_array = np.array([quat.x, quat.y, quat.z, quat.w])
+        quat = msg.pose.pose.orientation
+        quat_array = np.array([quat.x, quat.y, quat.z, quat.w])
 
-            # normalize
-            quat_norm = np.linalg.norm(quat_array)
-            if quat_norm > 0: 
-                quat_normalized = quat_array / quat_norm
-            else:
-                quat_normalized = quat_array 
-                
-            rotation = R.from_quat(quat_normalized)
-
-            euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
-            amcl_r = euler[2] # get the yaw (z rotation) value from the returned array
+        # normalize
+        quat_norm = np.linalg.norm(quat_array)
+        if quat_norm > 0: 
+            quat_normalized = quat_array / quat_norm
+        else:
+            quat_normalized = quat_array 
             
-            self.data['amcl_x'].append(amcl_x)
-            self.data['amcl_y'].append(amcl_y)
-            self.data['amcl_r'].append(amcl_r)
-            self.data['robot_x'].append(self.robot_x)
-            self.data['robot_y'].append(self.robot_y)
-            self.data['robot_z'].append(self.robot_r)
-            self.data['cmd_vel_x'].append(self.cmd_vel_x)
-            self.data['cmd_vel_y'].append(self.cmd_vel_y)
-            self.data['cmd_vel_r'].append(self.cmd_vel_r)
-            
-            if len(self.data['amcl_x']) % 50 == 0:
-                self.get_logger().info(f"Recorded {len(self.data['amcl_x'])} pose pairs")
+        rotation = R.from_quat(quat_normalized)
+
+        euler = rotation.as_euler('xyz') # THIS IS IN RADIANS!
+        self.amcl_r = euler[2] # get the yaw (z rotation) value from the returned array
+
+        self.plot_data()
+
+    def plot_data(self):
+
+        if (self.robot_x is None or self.robot_y is None or self.robot_r is None or
+            self.cmd_vel_x is None or self.cmd_vel_y is None or self.cmd_vel_r is None):
+            self.get_logger().debug("Waiting for all topics to publish data...")
+            return
+        
+        '''record data in the data frame every 0.5s'''
+        self.data['amcl_x'].append(self.amcl_x)
+        self.data['amcl_y'].append(self.amcl_y)
+        self.data['amcl_r'].append(self.amcl_r)
+        self.data['robot_x'].append(self.robot_x)
+        self.data['robot_y'].append(self.robot_y)
+        self.data['robot_r'].append(self.robot_r)
+        self.data['cmd_vel_x'].append(self.cmd_vel_x)
+        self.data['cmd_vel_y'].append(self.cmd_vel_y)
+        self.data['cmd_vel_r'].append(self.cmd_vel_r)
     
     def save_data(self):
         df = pd.DataFrame(self.data)
@@ -114,7 +126,7 @@ def main(args=None):
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        node.get_logger().info("Shutting down...")
+        node.get_logger().info("Ending node...")
     finally:
         node.save_data()
         node.destroy_node()
