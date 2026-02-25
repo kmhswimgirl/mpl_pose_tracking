@@ -12,9 +12,9 @@ apriltag:                 # node name
       threads: 1          # number of threads
       decimate: 2.0       # decimate resolution for quad detection
       blur: 0.0           # sigma of Gaussian blur for quad detection
-      refine: 1           # snap to strong gradients
+      refine: true           # snap to strong gradients
       sharpening: 0.25    # sharpening of decoded images
-      debug: 0            # write additional debugging images to current working directory
+      debug: true            # write additional debugging images to current working directory
 
     pose_estimation_method: "pnp" # method for estimating the tag pose
 
@@ -22,5 +22,5 @@ apriltag:                 # node name
     # If defined, 'frames' and 'sizes' must have the same length as 'ids'.
     tag:
       ids:    [0, 11, 22, 33, 44]         # tag IDs for which to publish transform
-      frames: ["robot_tag", "tag_left", "tag_lower", "tag_right, "tag_upper"]   # frame names
+      frames: ["robot_tag", "tag_left", "tag_lower", "tag_right", "tag_upper"]   # frame names
       # sizes:  [<size1>, <size1>, ...]     # tag-specific edge size, overrides the default 'size'

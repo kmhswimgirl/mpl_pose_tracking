@@ -25,14 +25,18 @@ def generate_launch_description():
         remappings=[
             ('image', '/image_raw'),
             ('camera_info', '/camera_info')
-        ]
+        ],
+        parameters=[{'image_transport': 'compressed'}]
     )
 
     apriltag = Node(
         package='apriltag_ros',
         executable='apriltag_node',
-        arguments=[{'-r': '/image_rect:=/image_raw'}],
-        parameters=[apriltag_file]
+        name='apriltag',
+        remappings=[
+            ('image_rect', '/image_rect')
+        ],
+       parameters=[apriltag_file]
     )
 
     upper_tag_2_world = Node(
@@ -74,5 +78,5 @@ def generate_launch_description():
     return LaunchDescription([
         camera_node, 
         recify_image,
-        # apriltag
+        apriltag
         ])
