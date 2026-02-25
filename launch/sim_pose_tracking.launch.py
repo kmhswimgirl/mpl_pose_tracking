@@ -95,8 +95,8 @@ def generate_launch_description():
             FindExecutable(name='ros2'),
             'bag',
             'record',
-            # '/robot_pose',
-            # '/amcl_pose',
+             '/robot_pose',
+             '/amcl_pose',
             '-o', f'~/rosbags/']],
         shell=True
     )
@@ -114,7 +114,7 @@ def generate_launch_description():
         declare_config_file_cmd,
         gazebo_world,
         otto,
-        #localization,
+        localization,
         map_only,
         gazebo_poses, 
         drive_option_teleop,

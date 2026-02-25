@@ -1,5 +1,5 @@
 # pose of robot form gz sim dynamic pose
-- gz_topic_name: "world/pushback_no_blocks/dynamic_pose/info" # replace the default with whatever the world name is!!!!!
+- gz_topic_name: "world/pushback/dynamic_pose/info" # replace the default with whatever the world name is!!!!!
   ros_topic_name: "ground_truth" 
   ros_type_name: "geometry_msgs/msg/PoseArray"
   gz_type_name: "gz.msgs.Pose_V"

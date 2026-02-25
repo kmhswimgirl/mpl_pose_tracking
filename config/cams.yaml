@@ -1,0 +1,17 @@
+field_cam:
+ ros__parameters:
+    video_device: "/dev/video2"
+    framerate: 10.0
+    io_method: "mmap"
+    frame_id: "field_cam"
+    pixel_format: "mjpeg2rgb"  # see usb_cam/supported_formats for list of supported formats
+    av_device_format: "YUV422P"
+    image_width: 1600
+    image_height: 1200
+    camera_name: "field_cam"
+    camera_info_url: "package://mpl_pose_tracking/config/field_cam_120.yaml"
+    brightness: -1
+    contrast: -1
+    saturation: -1
+    sharpness: -1
+    gain: -1

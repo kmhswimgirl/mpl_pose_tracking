@@ -4,13 +4,12 @@ import math
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from nav_msgs.srv import GetPlan
-from geometry_msgs.msg import TwistStamped, PoseStamped, Pose
+from geometry_msgs.msg import TwistStamped, PoseStamped, Pose, TransformStamped
 from scipy.spatial.transform import Rotation as R
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from tf2_geometry_msgs import PoseStamped
 from apriltag_msgs.msg import AprilTagDetectionArray, AprilTagDetection
-
 from tf2_ros.transform_listener import TransformListener
 from tf2_ros.buffer import Buffer
 
@@ -42,16 +41,15 @@ class PoseTracker(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
-                ('origin_id', 32),
-                ('robot_id', 5),
-                ('corners', (12, 10, 11))  # clockwise from the origin, (top left, top right, lower right)
-            ])
+                ('robot_id', 0),
+                ('field_tags', (11, 22, 33, 44))  # clockwise from 
+            ]
+        )
         self.log = self.get_logger.info
 
         # Apriltag IDs
         self.robot_id = self.get_parameter('robot_id').value
-        self.origin_id = self.get_parameter('origin_id').value
-        self.corners = self.get_parameter('corners').value
+        self.field_tags = self.get_parameter('field_tags').value
 
         # apriltag detection subscriber
         self.ground_truth = self.create_subscription(AprilTagDetectionArray, '/detections', self.apriltag_callback)
@@ -59,22 +57,18 @@ class PoseTracker(Node):
         self._tf_buffer = Buffer()
         self._tf_listener = TransformListener(self._tf_buffer, self)
 
+        self.target_frame = 'frame1' # Replace with your first frame ID
+        self.source_frame = 'frame2' # Replace with your second frame ID
+
+        self.timer = self.create_timer(1.0, self.on_timer) 
 
     def get_relative_coords(self):
         
+
         
         pass
 
     def apriltag_callback(self, msg:AprilTagDetectionArray):
-        '''populate the tag coordinates'''
+        '''populate the global tag coordinates'''
         self.log("getting data from Apriltags...")
         tags = msg
-        for tag in tags:
-            match tag.id:
-                case self.robot_id:
-                    self.robot_tag_x = tag.centre.x
-                    self.robot_tag_y = tag.centre.y
-                case self.origin_id:
-                    self.origin_tag_x = tag.centre.x
-                    self.origin_tag_y = tag.centre.y
-                # case self.corners[0]:
