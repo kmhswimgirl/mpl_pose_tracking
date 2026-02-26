@@ -1,74 +1,145 @@
+#!/usr/bin/env python3
 
 import rclpy
-import math
 from rclpy.node import Node
-from nav_msgs.msg import Odometry
-from nav_msgs.srv import GetPlan
-from geometry_msgs.msg import TwistStamped, PoseStamped, Pose, TransformStamped
+from geometry_msgs.msg import PoseStamped, TransformStamped
 from scipy.spatial.transform import Rotation as R
-from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.executors import MultiThreadedExecutor
 from tf2_geometry_msgs import PoseStamped
-from apriltag_msgs.msg import AprilTagDetectionArray, AprilTagDetection
+from apriltag_msgs.msg import AprilTagDetectionArray
 from tf2_ros.transform_listener import TransformListener
+from tf2_ros.transform_broadcaster import TransformBroadcaster
 from tf2_ros.buffer import Buffer
+from typing import List
 
 '''
-kymadogg@kh-fw-16:~$ ros2 interface show apriltag_msgs/msg/AprilTagDetectionArray
-std_msgs/Header header
-	builtin_interfaces/Time stamp
-		int32 sec
-		uint32 nanosec
-	string frame_id
-AprilTagDetection[] detections
-	string family
-	int32 id
-	int32 hamming
-	float32 goodness
-	float32 decision_margin
-	Point centre                    
-		float64 x
-		float64 y
-	Point[4] corners                
-		float64 x
-		float64 y
-	float64[9] homography           
+apriltag_ground_truth Node TF Tree
+               +------------------+                   
+               |robot ground truth| 
+               |  (robot_tag)     | 
+               +---------^--------+                   
+                         |                            
+               +---------+--------+                   
+               |average world tf  |                   
+               +---------^--------+                   
+                         |                            
+              +-------------------+                   
+    +---------+ field camera frame+-------------+     
+    |         | (root frame)      |             |     
+    |         +----+-------------++             |     
+    |              |             |              |     
++---v-----+   +----v----+     +--v------+   +---v----+
+|upper tag|   |lower tag|     |right tag|   |left tag|
++---+-----+   +----+----+     +--+------+   +--+-----+
+    |              |             |             |      
++---v---+     +----v--+       +--v----+     +--v----+ 
+|world 1|     |world 2|       |world 3|     |world 4| 
++-------+     +-------+       +-------+     +-------+ 
 '''
 
 class PoseTracker(Node):
     def __init__(self):
         super().__init__('apriltag_ground_truth')
-        self.declare_parameters(
-            namespace='',
-            parameters=[
-                ('robot_id', 0),
-                ('field_tags', (11, 22, 33, 44))  # clockwise from 
-            ]
-        )
         self.log = self.get_logger.info
 
-        # Apriltag IDs
-        self.robot_id = self.get_parameter('robot_id').value
-        self.field_tags = self.get_parameter('field_tags').value
-
         # apriltag detection subscriber
-        self.ground_truth = self.create_subscription(AprilTagDetectionArray, '/detections', self.apriltag_callback)
+        self.ground_truth = self.create_subscription(AprilTagDetectionArray, '/detections', )
 
-        self._tf_buffer = Buffer()
-        self._tf_listener = TransformListener(self._tf_buffer, self)
+        # tf listener/buffer
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        self.target_frame = 'frame1' # Replace with your first frame ID
-        self.source_frame = 'frame2' # Replace with your second frame ID
+        # world frame tf publisher
+        self.tf_broadcaster = TransformBroadcaster(self)
 
+        # robot ground truth publisher
+        self.robot_ground_truth = self.create_publisher(PoseStamped, '/robot_ground_truth', 10)
+
+        self.robot_frame = 'robot_tag' # robot apriltag (ID 0) frame name
         self.timer = self.create_timer(1.0, self.on_timer) 
 
-    def get_relative_coords(self):
-        
-
-        
-        pass
-
     def apriltag_callback(self, msg:AprilTagDetectionArray):
-        '''populate the global tag coordinates'''
-        self.log("getting data from Apriltags...")
-        tags = msg
+        '''callback function for when apriltag detections are published on /detections'''
+        
+        self.get_average_world_frame()
+        self.publish_robot_ground_truth()
+
+    def average_transforms(self, transforms:List[TransformStamped]):
+        '''average a list of transforms'''
+        xs, ys, zs = [], [], []
+        quats = []
+        for tf in transforms:
+            t = tf.transform.translation
+            xs.append(t.x)
+            ys.append(t.y)
+            zs.append(t.z)
+            r = tf.transform.rotation
+            quats.append([r.x, r.y, r.z, r.w])
+        avg_translation = [sum(xs)/len(xs), sum(ys)/len(ys), sum(zs)/len(zs)]
+
+        rot = R.from_quat(quats)
+        avg_rot = rot.mean()
+        avg_quat = avg_rot.as_quat() 
+
+        return avg_translation, avg_quat
+    
+    def get_frame_tf(self, target_frame, source_frame):
+        '''get the transform between the target and source frames'''
+        try:
+            trans = self.tf_buffer.lookup_transform(
+                target_frame, # child frame
+                source_frame, # parent frame
+                rclpy.time.Time() # get most recent transform
+            )
+            return trans
+        except Exception as ex:
+            self.get_logger().warn(f"no available TF {source_frame} to {target_frame}: {ex}")
+            return None
+
+    def get_average_world_frame(self): 
+        '''average world frames w.r.t. the camera frame and publish a new frame representing the average world frame'''
+
+        w1_to_cam = self.get_frame_tf("field_cam", "world_1")
+        w2_to_cam = self.get_frame_tf("field_cam", "world_2")
+        w3_to_cam = self.get_frame_tf("field_cam", "world_3")
+        w4_to_cam = self.get_frame_tf("field_cam", "world_4")
+
+        avg_rot, avg_trans = self.average_transforms([w1_to_cam, w2_to_cam, w3_to_cam, w4_to_cam])
+
+        t = TransformStamped()
+        t.header.stamp = self.get_clock().now().to_msg()
+        t.header.frame_id = 'field_cam'
+        t.child_frame_id = 'world_frame'
+        t.transform.rotation = avg_rot
+        t.transform.translation = avg_trans
+
+        self.tf_broadcaster.send_transform(t)
+
+    def publish_robot_ground_truth(self): 
+        ''' find the frame difference and publish the ground truth to a topic'''
+
+        robot_tf = self.get_frame_tf(self.robot_frame, "world_frame")
+
+        # TransformStamped --> PoseStamped
+        pose = PoseStamped()
+        pose.header = robot_tf.header
+        pose.header.frame_id = robot_tf.child_frame_id
+        pose.pose.position = robot_tf.transform.translation
+        pose.pose.orientation = robot_tf.transform.rotation
+        
+        self.robot_ground_truth.publish(pose)
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = PoseTracker()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        node.get_logger().info("Ending node...")
+    finally:
+        node.save_data()
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

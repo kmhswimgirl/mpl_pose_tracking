@@ -15,7 +15,7 @@ def generate_launch_description():
         executable='usb_cam_node_exe', 
         output='screen',
         name='field_cam',
-        parameters=[config_file] # camera calibration is still messed up
+        parameters=[config_file] # camera calibration is still messed up, need bigger checkerboard
     )        
 
     recify_image = Node(
@@ -23,10 +23,9 @@ def generate_launch_description():
         executable='rectify_node',
         name='rectify_node',
         remappings=[
-            ('image', '/image_raw'),
-            ('camera_info', '/camera_info')
+            ('image', '/image_raw')
         ],
-        parameters=[{'image_transport': 'compressed'}]
+        parameters=[{'image_transport': 'raw'}]
     )
 
     apriltag = Node(
@@ -44,7 +43,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='upper_tag_st',
         output='screen',
-        arguments=['3.7401', '0.0', '0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world']
+        arguments=['3.7401', '0.0', '0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world_1']
     )
 
     lower_tag_2_world = Node(
@@ -52,7 +51,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='lower_tag_st',
         output='screen',
-        arguments=['3.7401', '0.0', '0.2921', '0.0', '0.0', '0.0', 'tag_lower', 'world']
+        arguments=['-3.7401', '0.0', '0.2921', '0.0', '0.0', '0.0', 'tag_lower', 'world_2']
     )
 
     right_tag_2_world = Node(
@@ -60,7 +59,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='right_tag_st',
         output='screen',
-        arguments=['3.7401', '3.7401', '0.2921', '0.0', '0.0', '0.0', 'tag_right', 'world']
+        arguments=['0', '3.7401', '0.2921', '0.0', '0.0', '0.0', 'tag_right', 'world_3']
     )
 
     left_tag_2_world = Node(
@@ -68,7 +67,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='left_tag_st',
         output='screen',
-        arguments=['0.0', '3.7401', '0.2921', '0.0', '0.0', '0.0', 'tag_left', 'world']
+        arguments=['0.0', '-3.7401', '0.2921', '0.0', '0.0', '0.0', 'tag_left', 'world_4']
     )
 
     # ros2 run tf2_ros static_transform_publisher x y z r p y parent_frame child_frame
