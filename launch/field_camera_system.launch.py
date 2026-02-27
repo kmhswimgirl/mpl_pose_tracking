@@ -43,7 +43,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='upper_tag_st',
         output='screen',
-        arguments=['3.7401', '0.0', '0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world_1']
+        arguments=['1.87005', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world_1']
     )
 
     lower_tag_2_world = Node(
@@ -51,7 +51,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='lower_tag_st',
         output='screen',
-        arguments=['-3.7401', '0.0', '0.2921', '0.0', '0.0', '0.0', 'tag_lower', 'world_2']
+        arguments=['-1.87005', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_lower', 'world_2']
     )
 
     right_tag_2_world = Node(
@@ -59,7 +59,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='right_tag_st',
         output='screen',
-        arguments=['0', '3.7401', '0.2921', '0.0', '0.0', '0.0', 'tag_right', 'world_3']
+        arguments=['0', '1.87005', '-0.2921', '0.0', '0.0', '0.0', 'tag_right', 'world_3']
     )
 
     left_tag_2_world = Node(
@@ -67,7 +67,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='left_tag_st',
         output='screen',
-        arguments=['0.0', '-3.7401', '0.2921', '0.0', '0.0', '0.0', 'tag_left', 'world_4']
+        arguments=['0.0', '-1.87005', '-0.2921', '0.0', '0.0', '0.0', 'tag_left', 'world_4']
     )
 
     # ros2 run tf2_ros static_transform_publisher x y z r p y parent_frame child_frame
