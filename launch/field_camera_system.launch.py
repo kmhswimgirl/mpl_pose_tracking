@@ -43,7 +43,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='upper_tag_st',
         output='screen',
-        arguments=['-1.899', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world_1']
+        arguments=['1.899', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world_1']
     )
 
     lower_tag_2_world = Node(
@@ -69,7 +69,7 @@ def generate_launch_description():
         output='screen',
         arguments=['0.0', '-1.899', '-0.2921', '0.0', '0.0', '0.0', 'tag_left', 'world_4']
     )
-    
+
     # ros2 run tf2_ros static_transform_publisher x y z r p y parent_frame child_frame
     # ros2 run image_proc rectify_node --ros-args  --remap image:=/image_raw -p image_transport:=compressed
     # ros2 run apriltag_ros apriltag_node --ros-args --remap /image_rect:=/image_raw -p image_transport:=compressed
