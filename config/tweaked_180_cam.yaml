@@ -1,0 +1,20 @@
+image_width: 1920
+image_height: 1080
+camera_name: field_cam
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [583.531613, 0.000000, 959.4605409999999, 0.000000, 584.666745, 535.706217, 0.000000, 0.000000, 1.000000]
+distortion_model: equidistant
+distortion_coefficients:
+  rows: 1
+  cols: 4
+  data: [-0.0294, -0.0368, -0.0199, 0.0089]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [583.531613, 0.000000, 959.460540, 0.000000, 0.000000, 584.666745, 535.706217, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]

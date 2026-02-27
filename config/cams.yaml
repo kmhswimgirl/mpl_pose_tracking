@@ -9,7 +9,7 @@ field_cam:
     image_width: 1920
     image_height: 1080
     camera_name: "field_cam"
-    camera_info_url: "package://mpl_pose_tracking/config/field_cam_180.yaml"
+    camera_info_url: "package://mpl_pose_tracking/config/tweaked_180_cam.yaml"
     brightness: -1
     contrast: -1
     saturation: -1

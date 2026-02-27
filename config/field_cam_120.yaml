@@ -1,15 +1,15 @@
-image_width: 1600
-image_height: 1200
+image_width: 1280
+image_height: 720
 camera_name: field_cam
 camera_matrix:
   rows: 3
   cols: 3
   data: [593.531613, 0.000000, 967.160541, 0.000000, 594.666745, 502.406217, 0.000000, 0.000000, 1.000000]
-distortion_model: plumb_bob
+distortion_model: equidistant
 distortion_coefficients:
   rows: 1
-  cols: 5
-  data: [-0.024956, -0.004761, -0.001722, 0.000733, 0.000000]
+  cols: 4
+  data: [-0.024956, -0.004761, -0.001722, 0.000733]
 rectification_matrix:
   rows: 3
   cols: 3

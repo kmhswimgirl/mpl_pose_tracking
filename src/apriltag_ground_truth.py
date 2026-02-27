@@ -36,7 +36,7 @@ apriltag_ground_truth Node TF Tree
 +-------+     +-------+       +-------+     +-------+ 
 '''
 
-class PoseTracker(Node):
+class RobotGroundTruth(Node):
     def __init__(self):
         super().__init__('apriltag_ground_truth')
 
@@ -54,7 +54,6 @@ class PoseTracker(Node):
         self.robot_ground_truth = self.create_publisher(PoseStamped, '/robot_ground_truth', 10)
 
         self.robot_frame = 'robot_tag' # robot apriltag (ID 0) frame name
-        self.timer = self.create_timer(1.0, self.on_timer) 
 
     def apriltag_callback(self, msg:AprilTagDetectionArray):
         '''callback function for when apriltag detections are published on /detections'''
@@ -102,43 +101,62 @@ class PoseTracker(Node):
         w3_to_cam = self.get_frame_tf("field_cam", "world_3")
         w4_to_cam = self.get_frame_tf("field_cam", "world_4")
 
-        avg_rot, avg_trans = self.average_transforms([w1_to_cam, w2_to_cam, w3_to_cam, w4_to_cam])
+        # none handling
+        transforms = [w1_to_cam, w2_to_cam, w3_to_cam, w4_to_cam]
+        valid_transforms = [tf for tf in transforms if tf is not None]
+
+        if len(valid_transforms) == 0:
+            self.get_logger().warn("no valid world transforms available")
+            return
+
+        avg_trans, avg_quat = self.average_transforms(valid_transforms)
 
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()
         t.header.frame_id = 'field_cam'
         t.child_frame_id = 'world_frame'
-        t.transform.rotation = avg_rot
-        t.transform.translation = avg_trans
+        t.transform.translation.x = avg_trans[0]
+        t.transform.translation.y = avg_trans[1]
+        t.transform.translation.z = avg_trans[2]
+        t.transform.rotation.x = avg_quat[0]
+        t.transform.rotation.y = avg_quat[1]
+        t.transform.rotation.z = avg_quat[2]
+        t.transform.rotation.w = avg_quat[3]
 
-        self.tf_broadcaster.send_transform(t)
+
+        self.tf_broadcaster.sendTransform(t)
 
     def publish_robot_ground_truth(self): 
         ''' find the frame difference and publish the ground truth to a topic'''
 
         robot_tf = self.get_frame_tf(self.robot_frame, "world_frame")
 
+        # error handling if no robot pose
+        if robot_tf is None:
+            self.get_logger().warn("robot frame not available for publishing ground truth")
+            return
+
         # TransformStamped --> PoseStamped
         pose = PoseStamped()
         pose.header = robot_tf.header
         pose.header.frame_id = robot_tf.child_frame_id
-        pose.pose.position = robot_tf.transform.translation
+        pose.pose.position.x = robot_tf.transform.translation.x
+        pose.pose.position.y = robot_tf.transform.translation.y
+        pose.pose.position.z = robot_tf.transform.translation.z
         pose.pose.orientation = robot_tf.transform.rotation
         
         self.robot_ground_truth.publish(pose)
 
 def main(args=None):
     rclpy.init(args=args)
-    node = PoseTracker()
+    node = RobotGroundTruth()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        node.get_logger().info("Ending node...")
-    finally:
-        node.save_data()
-        node.destroy_node()
-        if rclpy.ok():
+            node.destroy_node()
             rclpy.shutdown()
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
