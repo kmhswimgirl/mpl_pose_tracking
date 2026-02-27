@@ -8,7 +8,7 @@ from ament_index_python import get_package_share_directory
 def generate_launch_description():
     pkg_dir= get_package_share_directory('mpl_pose_tracking')
     config_file = os.path.join(pkg_dir, 'config', 'cams.yaml')
-    apriltag_file = os.path.join(pkg_dir, 'config', 'test_apriltags.yaml')
+    apriltag_file = os.path.join(pkg_dir, 'config', 'apriltags.yaml')
 
     camera_node =  Node( # launches
         package='usb_cam', 
@@ -38,53 +38,53 @@ def generate_launch_description():
        parameters=[apriltag_file]
     )
 
-    # upper_tag_2_world = Node(
-    #     package='tf2_ros',
-    #     executable='static_transform_publisher',
-    #     name='upper_tag_st',
-    #     output='screen',
-    #     arguments=['1.87005', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world_1']
-    # )
+    upper_tag_2_world = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='upper_tag_st',
+        output='screen',
+        arguments=['1.87005', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world_1']
+    )
 
-    # lower_tag_2_world = Node(
-    #     package='tf2_ros',
-    #     executable='static_transform_publisher',
-    #     name='lower_tag_st',
-    #     output='screen',
-    #     arguments=['-1.87005', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_lower', 'world_2']
-    # )
+    lower_tag_2_world = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='lower_tag_st',
+        output='screen',
+        arguments=['-1.87005', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_lower', 'world_2']
+    )
 
-    # right_tag_2_world = Node(
-    #     package='tf2_ros',
-    #     executable='static_transform_publisher',
-    #     name='right_tag_st',
-    #     output='screen',
-    #     arguments=['0', '1.87005', '-0.2921', '0.0', '0.0', '0.0', 'tag_right', 'world_3']
-    # )
+    right_tag_2_world = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='right_tag_st',
+        output='screen',
+        arguments=['0', '1.87005', '-0.2921', '0.0', '0.0', '0.0', 'tag_right', 'world_3']
+    )
 
-    # left_tag_2_world = Node(
+    left_tag_2_world = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='left_tag_st',
+        output='screen',
+        arguments=['0.0', '-1.87005', '-0.2921', '0.0', '0.0', '0.0', 'tag_left', 'world_4']
+    )
+
+    # test_tag_2_world_1 = Node(
     #     package='tf2_ros',
     #     executable='static_transform_publisher',
     #     name='left_tag_st',
     #     output='screen',
-    #     arguments=['0.0', '-1.87005', '-0.2921', '0.0', '0.0', '0.0', 'tag_left', 'world_4']
+    #     arguments=['0.63', '0.0', '0.0', '0.0', '0.0', '0.0', 'tag_left', 'world_1']
     # )
 
-    test_tag_2_world_1 = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='left_tag_st',
-        output='screen',
-        arguments=['0.63', '0.0', '0.0', '0.0', '0.0', '0.0', 'tag_left', 'world_1']
-    )
-
-    test_tag_2_world_2 = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='left_tag_st',
-        output='screen',
-        arguments=['-0.63', '0.0', '0.0', '0.0', '0.0', '0.0', 'tag_right', 'world_2']
-    )
+    # test_tag_2_world_2 = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='left_tag_st',
+    #     output='screen',
+    #     arguments=['-0.63', '0.0', '0.0', '0.0', '0.0', '0.0', 'tag_right', 'world_2']
+    # )
 
     # ros2 run tf2_ros static_transform_publisher x y z r p y parent_frame child_frame
     # ros2 run image_proc rectify_node --ros-args  --remap image:=/image_raw -p image_transport:=compressed
@@ -94,6 +94,8 @@ def generate_launch_description():
         camera_node, 
         recify_image,
         apriltag,
-        test_tag_2_world_2,
-        test_tag_2_world_1 
+        upper_tag_2_world,
+        lower_tag_2_world, 
+        right_tag_2_world,
+        left_tag_2_world
         ])
