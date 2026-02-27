@@ -77,5 +77,9 @@ def generate_launch_description():
     return LaunchDescription([
         camera_node, 
         recify_image,
-        apriltag
+        apriltag,
+        upper_tag_2_world,
+        lower_tag_2_world,
+        # right_tag_2_world,
+        # left_tag_2_world
         ])

@@ -39,10 +39,9 @@ apriltag_ground_truth Node TF Tree
 class PoseTracker(Node):
     def __init__(self):
         super().__init__('apriltag_ground_truth')
-        self.log = self.get_logger.info
 
         # apriltag detection subscriber
-        self.ground_truth = self.create_subscription(AprilTagDetectionArray, '/detections', )
+        self.ground_truth = self.create_subscription(AprilTagDetectionArray, '/detections', self.apriltag_callback, 10)
 
         # tf listener/buffer
         self.tf_buffer = Buffer()
