@@ -4,6 +4,7 @@ import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from ament_index_python import get_package_share_directory
+from launch.conditions import IfCondition
 
 def generate_launch_description():
     pkg_dir= get_package_share_directory('mpl_pose_tracking')
@@ -15,7 +16,7 @@ def generate_launch_description():
         executable='usb_cam_node_exe', 
         output='screen',
         name='field_cam',
-        parameters=[config_file] # camera calibration is still messed up, need bigger checkerboard
+        parameters=[config_file]
     )        
 
     recify_image = Node(
@@ -43,7 +44,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='upper_tag_st',
         output='screen',
-        arguments=['1.899', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world_1']
+        arguments=['-1.899', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_upper', 'world_1']
     )
 
     lower_tag_2_world = Node(
@@ -51,7 +52,7 @@ def generate_launch_description():
         executable='static_transform_publisher',
         name='lower_tag_st',
         output='screen',
-        arguments=['-1.899', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_lower', 'world_2']
+        arguments=['1.899', '0.0', '-0.2921', '0.0', '0.0', '0.0', 'tag_lower', 'world_2']
     )
 
     right_tag_2_world = Node(

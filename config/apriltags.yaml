@@ -22,5 +22,5 @@ apriltag:                 # node name
     # If defined, 'frames' and 'sizes' must have the same length as 'ids'.
     tag:
       ids:    [0, 11, 22, 33, 44]         # tag IDs for which to publish transform
-      frames: ["robot_tag", "tag_left", "tag_lower", "tag_right", "tag_upper"]   # frame names
+      frames: ["robot_tag", "tag_upper", "tag_right", "tag_lower", "tag_left"]   # frame names
       sizes:  [0.165, 0.223, 0.223, 0.223, 0.223]     # tag-specific edge size, overrides the default 'size'
